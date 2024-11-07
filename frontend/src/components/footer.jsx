@@ -8,8 +8,8 @@ export default function Footer() {
           <div class="grid grid-cols-2 md:col-span-3 lg:grid-cols-6 gap-y-16 gap-x-12">
             <div class="col-span-2 md:col-span-3 lg:col-span-2 lg:pr-8">
               <p class="text-lg leading-relaxed text-[#0d141c] font-bold mt-7">
-                ParkEase is a parking lot aggregator offering RFID-based
-                check-in, billing, online booking, and secure parking services.
+                Perform an email or a phone reverse lookup on our OSINT tool to
+                uncover all social media profiles. 
               </p>
 
               <ul class="flex items-center space-x-3 mt-9">
