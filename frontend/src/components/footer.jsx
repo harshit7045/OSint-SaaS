@@ -97,45 +97,55 @@ export default function Footer() {
               <ul class="mt-6 space-y-4">
                 <li>
                   <a
-                    href="#"
+                    href="/"
                     title=""
                     class="flex font-semibold text-base  text-[#0d141c] transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   >
                     {" "}
-                    About{" "}
+                    Home{""}
                   </a>
                 </li>
 
                 <li>
                   <a
-                    href="#"
+                    href="/phoneosint"
                     title=""
                     class="flex  font-semibold text-base   text-[#0d141c] transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   >
                     {" "}
-                    Features{" "}
+                    Phone OSint{" "}
                   </a>
                 </li>
 
                 <li>
                   <a
-                    href="#"
+                    href="/emailosint"
                     title=""
                     class="flex  font-semibold text-base   text-[#0d141c] transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   >
                     {" "}
-                    Works{" "}
+                    Email OSint{" "}
                   </a>
                 </li>
 
                 <li>
                   <a
-                    href="#"
+                    href="/socialmediaosint"
                     title=""
                     class="flex font-semibold text-base    text-[#0d141c] transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   >
                     {" "}
-                    Career{" "}
+                    Social Media OSint{" "}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/imageosint"
+                    title=""
+                    class="flex font-semibold text-base    text-[#0d141c] transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
+                  >
+                    {" "}
+                    Image OSint{" "}
                   </a>
                 </li>
               </ul>

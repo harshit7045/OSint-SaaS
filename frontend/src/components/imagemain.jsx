@@ -28,12 +28,13 @@ function Imagesearchcomponent() {
     formData.append("avatar", selectedFile);
 
     try {
-      const response = await fetch("http://localhost:4002/api/imageosint/upload", {
+      const response = await fetch(`http://${import.meta.env.VITE_BACKEND_IP}:${import.meta.env.VITE_BACKEND_PORT}/api/imageosint/upload`, {
         method: "POST",
         body: formData,
       });
-
+       
       if (response.ok) {
+        
         const data = await response.json();
         console.log("File uploaded successfully:", data.data);
         setSearchResults(data.data);
@@ -41,7 +42,14 @@ function Imagesearchcomponent() {
         console.error("Failed to upload file.");
       }
     } catch (error) {
+      
       console.error("Error:", error);
+      let message = {
+        sevierty: "error",
+        message: "Insufficient Balance",
+      }
+      setAlertData(message);
+      console.log(alertData);
     }
   };
 

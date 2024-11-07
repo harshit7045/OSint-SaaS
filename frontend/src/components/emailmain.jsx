@@ -1,14 +1,26 @@
 import React, { useState } from "react";
 import Cookies from "js-cookie";
 import SimpleAlert from "./alert";
+
 function EmailSearchComponent() {
   const [searchResults, setSearchResults] = useState([]);
   const [alertData, setAlertData] = useState({
-    sevierty: "success",
-    message: "Success",
-  })
+    severity: "",
+    message: "",
+  });
+
   const emailSearch = async () => {
     const email = document.getElementById("email").value;
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setAlertData({
+        severity: "error",
+        message: "Please enter a valid email address.",
+      });
+      return; // Stop further execution if email is invalid
+    }
 
     try {
       const response = await fetch(
@@ -23,18 +35,22 @@ function EmailSearchComponent() {
       );
 
       if (!response.ok) {
+        setAlertData({
+          severity: "error",
+          message: "Insufficient Balance",
+        });
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const result = await response.json();
-      result.email=email;
+      result.email = email;
 
       console.log("Email data", result);
-     
+
       // Replace existing results with the new result
-      setSearchResults(prevResults => [...prevResults, result]);
+      setSearchResults((prevResults) => [...prevResults, result]);
     } catch (error) {
-      console.error("Error in EmailOSintRequest:", error);
+      console.error("Error in EmailSearch:", error);
     }
   };
 
@@ -73,60 +89,27 @@ function EmailSearchComponent() {
                 <table className="flex-1">
                   <thead>
                     <tr className="bg-slate-50">
-                    <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        Email
-                      </th>
-                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        Valid
-                      </th>
-                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        Disposable
-                      </th>
-                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        Domain
-                      </th>
-                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        MX IP
-                      </th>
-                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        MX Info
-                      </th>
-                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        Email Forwarder
-                      </th>
-                      
-                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">
-                        Reason
-                      </th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">Email</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">Valid</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">Disposable</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">Domain</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">MX IP</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">MX Info</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">Email Forwarder</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[80vw] text-sm font-medium">Reason</th>
                     </tr>
                   </thead>
                   <tbody>
                     {searchResults.map((row, index) => (
                       <tr key={index} className="border-t border-[#cedbe8]">
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#0d141c] text-sm font-normal">
-                          {row.email}
-                        </td>
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#0d141c] text-sm font-normal">
-                          {row.valid ? 'Yes' : 'No'}
-                        </td>
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">
-                          {row.disposable ? 'Yes' : 'No'}
-                        </td>
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">
-                          {row.domain}
-                        </td>
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">
-                          {row.mx_ip}
-                        </td>
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">
-                          {row.mx_info}
-                        </td>
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">
-                          {row.email_forwarder?"Yes":"No"}
-                        </td>
-                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">
-                          {row.reason}
-                        </td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#0d141c] text-sm font-normal">{row.email}</td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#0d141c] text-sm font-normal">{row.valid ? 'Yes' : 'No'}</td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">{row.disposable ? 'Yes' : 'No'}</td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">{row.domain}</td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">{row.mx_ip}</td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">{row.mx_info}</td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">{row.email_forwarder ? "Yes" : "No"}</td>
+                        <td className="h-[72px] px-4 py-2 w-[80vw] text-[#49719c] text-sm font-normal">{row.reason}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -136,7 +119,7 @@ function EmailSearchComponent() {
           </div>
         </div>
       </div>
-     <SimpleAlert severity={alertData.severity} message={alertData.message} />
+      {alertData.message && <SimpleAlert severity={alertData.severity} message={alertData.message} />}
     </div>
   );
 }

@@ -23,6 +23,10 @@ function SocialMediaUserEnrichment() {
       );
 
       if (!response.ok) {
+        setAlertData({
+          severity: "error",
+          message: "Insufficient Balance",
+        });
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 

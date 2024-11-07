@@ -9,7 +9,7 @@ export default function SimpleAlert({ severity, message }) { // Destructure the 
       severity == "success" ? "bg-green-400" : severity == "error" ? "bg-red-400" : "bg-opacity-90"
     }`}
   >
-    
+<p>{message}</p>
   </div>
   
       

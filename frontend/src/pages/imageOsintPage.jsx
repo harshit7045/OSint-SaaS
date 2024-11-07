@@ -8,7 +8,7 @@ function Imageosint() {
         <>
             <Header />
             <Imagesearchcomponent />
-            <Phoneosintgraphics/>
+            <Phoneosintgraphics />
             <Footer />
         </>
     );

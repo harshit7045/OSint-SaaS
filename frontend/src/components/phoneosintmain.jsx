@@ -1,15 +1,25 @@
 import React, { useState } from "react";
 import Cookies from "js-cookie";
 import SimpleAlert from "./alert";
+
 function Phonesearchcomponent() {
   const [searchResults, setSearchResults] = useState([]);
   const [alertData, setAlertData] = useState({
-    sevierty: "true",
+    severity: "success",
     message: "",
-  })
+  });
 
   const PhoneOSintRequest = async () => {
     const phone = document.getElementById("phone_number").value;
+
+    // Validate phone number (must be exactly 10 digits)
+    if (!/^\d{10}$/.test(phone)) {
+      setAlertData({
+        severity: "error",
+        message: "Please enter a valid 10-digit phone number.",
+      });
+      return; // Stop further execution if phone number is invalid
+    }
 
     try {
       const response = await fetch(
@@ -26,21 +36,20 @@ function Phonesearchcomponent() {
       );
 
       if (!response.ok) {
+        setAlertData({
+          severity: "error",
+          message: "Insufficient Balance",
+        });
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const result = await response.json();
       console.log("Phone data", result);
-      // Update the state with the new results
-      setSearchResults(prevResults => [...prevResults, result]);
+      setSearchResults((prevResults) => [...prevResults, result]);
     } catch (error) {
       console.error("Error in PhoneOSintRequest:", error);
     }
   };
-
-  
-        
-      
 
   return (
     <div
@@ -65,7 +74,10 @@ function Phonesearchcomponent() {
               </label>
             </div>
             <div className="flex px-4 py-3 justify-end">
-              <button onClick={PhoneOSintRequest} className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#0d7cf2] text-slate-50 text-sm font-bold">
+              <button
+                onClick={PhoneOSintRequest}
+                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#0d7cf2] text-slate-50 text-sm font-bold"
+              >
                 <span className="truncate">Search</span>
               </button>
             </div>
@@ -74,9 +86,9 @@ function Phonesearchcomponent() {
                 <table className="flex-1">
                   <thead>
                     <tr className="bg-slate-50">
-                    <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Number</th>
-                    <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Valid</th>
-                    <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Location</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Number</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Valid</th>
+                      <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Location</th>
                       <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Carrier</th>
                       <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Location</th>
                       <th className="px-4 py-3 text-left text-[#0d141c] w-[400px] text-sm font-medium">Country</th>
@@ -90,7 +102,7 @@ function Phonesearchcomponent() {
                           {row.international_format}
                         </td>
                         <td className="h-[72px] px-4 py-2 w-[400px] text-[#49719c] text-sm font-normal">
-                        {row.valid ? "Yes" : "No"}
+                          {row.valid ? "Yes" : "No"}
                         </td>
                         <td className="h-[72px] px-4 py-2 w-[400px] text-[#49719c] text-sm font-normal">
                           {row.location}
@@ -116,7 +128,9 @@ function Phonesearchcomponent() {
           </div>
         </div>
       </div>
-      <SimpleAlert sevierty={alertData.sevierty} message={alertData.message} />
+      {alertData.message && (
+        <SimpleAlert severity={alertData.severity} message={alertData.message} />
+      )}
     </div>
   );
 }

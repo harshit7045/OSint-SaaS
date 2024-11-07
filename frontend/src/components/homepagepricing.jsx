@@ -182,7 +182,7 @@ function Homepagepricing() {
                   </span>
                 </p>
               </div>
-              <button onClick={handleClick} class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em]">
+              <button  class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-bold leading-normal tracking-[0.015em]">
                 <span class="truncate">Sign up for free</span>
               </button>
               <div class="flex flex-col gap-2">

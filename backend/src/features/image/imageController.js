@@ -25,7 +25,7 @@ const imageController = {
         try {
             getJson({
                 engine: "google_reverse_image",
-                image_url: "https://cdn.ndtv.com/tech/images/gadgets/narendra_modi_reuters_58.jpg",
+                image_url: imageUrl,
                 api_key: "c135fa039a0d2f01447e4fea7398b8edd044dd280b2642abceb97fbae5115fd1"
               }, (json) => {
                 console.log(json);

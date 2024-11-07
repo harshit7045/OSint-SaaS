@@ -63,8 +63,8 @@ const router = createBrowserRouter([
   },
   {
     path: "/imageosint",
-    element: <Imageosint />,
-    errorElement: <Errorpage />
+    element: <Imageosint/>,
+        errorElement: <Errorpage />
   },
 
 ])
