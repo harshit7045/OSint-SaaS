@@ -1,149 +1,137 @@
-import React, { useState } from "react";
-import "tailwindcss/tailwind.css";
-import { useNavigate } from "react-router-dom";
-const RegistrationForm = () => {
-  const navigate = useNavigate();
-    const handelRegister = () => {
-      navigate("/login");
-    };
-    
-  const [numVehicles, setNumVehicles] = useState(0);
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const Register = () => {
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const [errors, setErrors] = useState({});
-
-  const validateEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const validatePassword = (password) => {
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(password);
-  };
-
-  
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleVehicleChange = (index, e) => {
-    const { name, value } = e.target;
-    const newVehicles = [...formData.vehicles];
-    newVehicles[index] = { ...newVehicles[index], [name]: value };
-    setFormData({ ...formData, vehicles: newVehicles });
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!validateEmail(formData.email)) {
-      newErrors.email = "Invalid email format.";
-    }
-    if (!validatePassword(formData.password)) {
-      newErrors.password =
-        "Password must be at least 8 characters long and contain letters, numbers, and special characters.";
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-  let register;
-  const registerUser = async () => {
-    
-    if (!validateForm()) {
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
-    const userData = {
-      email: formData.email,
-      password: formData.password,
-      name: formData.name,
-      
-    };
-
     try {
-      const response = await fetch(`http://${import.meta.env.VITE_BACKEND_IP}:${import.meta.env.VITE_BACKEND_PORT}/api/user/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
+      const response = await axios.post('http://localhost:4002/api/auth/signup', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
       });
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Registration successful:", data);
-        handelRegister();
-      } else {
-        //console.error("Registration failed:", response.statusText);
+
+      if (response.data.success) {
+        navigate('/login');
       }
     } catch (error) {
-      //console.error("Error:", error);
+      setError(error.response?.data?.message || 'Registration failed');
     }
   };
 
   return (
-    <div className="p-4 max-w-md min-h-[50vh] mx-auto mb-[-5vh] sm:max-w-lg sm:mx-auto sm:p-8 lg:max-w-full lg:mx-0 lg:p-8">
-      <form className="lg:w-full lg:flex lg:flex-col lg:items-center">
-        <div className="mb-4 w-full">
-          <label className="block text-gray-700">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300"
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Create your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
           )}
-        </div>
-        <div className="mb-4 w-full">
-          <label className="block text-gray-700">Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300"
-          />
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-          )}
-        </div>
-        <div className="mb-4 w-full">
-          <label className="block text-gray-700">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.phoneNumber}
-            onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300"
-          />
-          {errors.phoneNumber && (
-            <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
-          )}
-        </div>
-        
-        
-        <div className="flex  text-center justify-center w-full">
-          <button
-            type="button"
-            onClick={registerUser}
-            className="px-4 py-2 h-[5vh] min-w-[20vw] bg-[#0d7cf2] text-white flex justify-center items-center font-bold rounded"
-          >
-            Register
-          </button>
-        </div>
-      </form>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="name" className="sr-only">
+                Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Full name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="sr-only">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Confirm password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Register
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default RegistrationForm;
+export default Register;

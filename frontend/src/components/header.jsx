@@ -1,91 +1,166 @@
-import React, { useState } from "react";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FaUser, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
 
-function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const token = Cookies.get("usertoken");
+const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleButtonClick = () => {
+       useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem("token");
+    const storedUserData = localStorage.getItem("userData");
+
     if (token) {
-      navigate("/profile");
+      setIsLoggedIn(true);
+      if (storedUserData) {
+        setUserData(JSON.parse(storedUserData));
+      }
     } else {
-      navigate("/login");
+      setIsLoggedIn(false);
+      setUserData(null);
     }
   };
 
-  const toggleMenu = () => {
-    console.log("Toggling menu"); // Debugging to see if this function is called
-    setIsMenuOpen(!isMenuOpen);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("userId");
+    setIsLoggedIn(false);
+    setUserData(null);
+    navigate("/login");
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-solid border-[#e7edf4] px-6 py-3 relative">
-      {/* Logo and Title */}
-      <div className="flex items-center gap-2 text-[#0d141c]">
-        <a href="/" className="flex items-center gap-2">
-          <svg
-            viewBox="0 0 48 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6"
-          >
-            <path
-              d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z"
-              fill="currentColor"
-            ></path>
-          </svg>
-          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">OSINT</h2>
-        </a>
-      </div>
+    <header className="bg-white shadow-md fixed w-full top-0 z-50">
+      <nav className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          <Link to="/" className="text-2xl font-bold text-blue-600 flex items-center">
+            <img src="/logo.png" alt="TuteDude" className="h-8 w-auto mr-2" />
+          </Link>
 
-      {/* Desktop Navigation Links */}
-      <nav className="hidden md:flex flex-1 justify-end gap-8">
-        <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2] mt-[10px]" href="/phoneosint">Phone OSINT</a>
-        <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2] mt-[10px]" href="/emailosint">Email OSINT</a>
-        <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2] mt-[10px]" href="/socialmediaosint">Social Media OSINT</a>
-        <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2] mt-[10px]" href="/imageosint">Reverse Image Search</a>
-        <button
-          onClick={handleButtonClick}
-          className="text-sm bg-[#0d7cf2] rounded-lg px-4 py-2 text-white font-medium hover:bg-[#0b6ad4]"
-        >
-          {token ? "Profile" : "Login Or Sign Up"}
-        </button>
-      </nav>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link to="/" className="text-gray-700 hover:text-blue-600 transition duration-200">
+              Home
+            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link to="/my-videos" className="text-gray-700 hover:text-blue-600 transition duration-200">
+                  My Videos
+                </Link>
+                <div className="relative group">
+                  <Link to="/profile" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition duration-200">
+                    <FaUser className="text-lg" />
+                    <span>{userData?.username || 'Course Page'}</span>
+                  </Link>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
+                >
+                  <FaSignOutAlt />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-gray-700 hover:text-blue-600 transition duration-200"
+                >
+                  Login
+                </Link>
+                <Link
+                  to={isLoggedIn ? "/profile" : "/register"} // Redirect to profile if logged in
+                  className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-200"
+                >
+                  {isLoggedIn ? "Go to Profile" : "Sign Up"}
+                </Link>
+              </>
+            )}
+          </div>
 
-      {/* Hamburger Menu Icon for Mobile */}
-      <div className="md:hidden flex items-center">
-        <button onClick={toggleMenu} className="text-[#0d7cf2] focus:outline-none text-2xl">
-        ☰
-        </button>
-      </div>
-
-      {/* Mobile Dropdown Menu */}
-      {isMenuOpen && (
-        <div className="absolute top-16 left-0 w-full bg-white shadow-md p-4 md:hidden flex flex-col items-start space-y-3 z-50">
-          <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2]" href="/phoneosint">
-            Phone OSINT
-          </a>
-          <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2]" href="/emailosint">
-            Email OSINT
-          </a>
-          <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2]" href="/socialmediaosint">
-            Social Media OSINT
-          </a>
-          <a className="text-[#0d141c] text-sm font-medium hover:text-[#0d7cf2]" href="/imageosint">
-            Reverse Image Search
-          </a>
+          {/* Mobile Menu Button */}
           <button
-            onClick={handleButtonClick}
-            className="text-sm w-full bg-[#0d7cf2] rounded-lg px-4 py-2 text-white font-medium hover:bg-[#0b6ad4]"
+            onClick={toggleMobileMenu}
+            className="md:hidden text-gray-700 hover:text-blue-600 transition duration-200"
+            aria-label="Toggle menu"
           >
-            {token ? "Profile" : "Login Or Sign Up"}
+            {isMobileMenuOpen ? <FaTimes className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
           </button>
         </div>
-      )}
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-4 bg-white rounded-lg shadow-lg p-4 space-y-3">
+            <Link
+              to="/"
+              className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-4 py-2 rounded transition duration-200"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Home
+            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to="/my-videos"
+                  className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-4 py-2 rounded transition duration-200"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  My Videos
+                </Link>
+                <Link
+                  to="/profile"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-4 py-2 rounded transition duration-200"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <FaUser />
+                  <span>{userData?.username || 'Profile'}</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center space-x-2 w-full text-left text-red-500 hover:text-red-600 hover:bg-gray-50 px-4 py-2 rounded transition duration-200"
+                >
+                  <FaSignOutAlt />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-4 py-2 rounded transition duration-200"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  to={isLoggedIn ? "/profile" : "/register"} // Redirect to profile if logged in
+                  className="block bg-blue-600 text-white text-center px-4 py-2 rounded-full hover:bg-blue-700 transition duration-200"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {isLoggedIn ? "Go to Profile" : "Sign Up"}
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+      </nav>
     </header>
   );
-}
+};
 
 export default Header;

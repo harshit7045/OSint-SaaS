@@ -3,16 +3,13 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: './src/.env' });
 
-const db_name = "OSint_SaaS";
+const db_name = "tutedude";
 
 const connectDB = async () => {
-    const dbURI = `${process.env.MONGODB_URI}${db_name}`;
-    console.log(`MongoDB URI: ${dbURI}`);
     try {
-        const conn = await mongoose.connect(dbURI, {
+        const conn = await mongoose.connect(process.env.MONGODB_URI, {
             useUnifiedTopology: true,
-            useNewUrlParser: true,
-            dbName: db_name
+            useNewUrlParser: true
         });
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {

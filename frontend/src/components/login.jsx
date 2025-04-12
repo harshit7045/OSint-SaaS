@@ -1,145 +1,116 @@
-import React from "react";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-import { useState } from "react";
-const alertBarStyle = {
-  width: "100%",
-  zIndex: 1,
-};
-async function loginUser() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  //console.log(email, password);
-  try {
-    const response = await fetch(`http://${import.meta.env.VITE_BACKEND_IP}:${import.meta.env.VITE_BACKEND_PORT}/api/user/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      
-      body: JSON.stringify({ email, password }),
-    });
-    //console.log(process.env.BACKENDIP);
-    const data = await response.json();
-    console.log("Document Cookies:", data.token);
-    if (data.token) {
-      loginNagivate();
-    } else {
-      //alert({ show: false, message: data.message, severity: "error" });
-    }
-    //console.log(data.token);
-
-    if (data.token) {
-      Cookies.set("usertoken", data.token, { expires: 7 });
-    }
-  } catch (error) {
-    //console.log(error);
-  }
-}
-let loginNagivate;
-let alert;
-const LoginWithGoogleButton = () => {
-  // const [alertData, setAlertData] = useState({
-  //   show: false,
-  //   message: "",
-  //   severity: "",
-  // });
-  // alert = setAlertData;
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const handleClick = () => {
-    navigate("/register");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        email,
+        password,
+      });
+
+      console.log("API Response:", response.data); // Debugging log
+
+      if (response.data.success && response.data.token && response.data.userId) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("userId", response.data.userId);
+
+        // Delay navigation to ensure localStorage updates first
+        setTimeout(() => {
+          navigate("/profile");
+        }, 100);
+      } else {
+        setError(response.data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Login Error:", error); // Debugging log
+      setError(error.response?.data?.message || "An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleLogin = () => {
-    navigate("/profile");
-  };
-  loginNagivate = handleLogin;
+
   return (
-    <div className="relative flex items-center justify-center h-screen w-full  mb-[-5vh]" >
-      <div className="absolute inset-0 bg-[#f8fafc] opacity-50 backdrop-blur-lg" ></div>
-      <div className="relative z-10 flex items-center justify-center h-screen w-full px-5 sm:px-0">
-        <div className="flex bg-[#f8fafc] rounded-lg shadow-lg border overflow-hidden max-w-sm lg:max-w-4xl w-full">
-          <div
-            className="hidden md:block lg:w-1/2 bg-cover bg-blue-700"
-            style={{
-              backgroundSize: 'cover', // Ensures the image covers the entire div
-              backgroundPosition: 'center', // Centers the image in the div
-              backgroundRepeat: 'no-repeat', // Prevents the image from repeating
-              
-              backgroundImage: `url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsBlMlGPc6XyYMS91KyP_3FBLXgBjSKDnDSWxK6j1i_54EoXb7e6BeuwU&s=10)`,
-            }}
-          ></div>
-        <div className="w-full p-8 lg:w-1/2">
-          <p className="text-xl text-gray-600 text-center">Welcome back!</p>
-          <div className="mt-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              className="text-gray-700 border border-gray-300 rounded py-2 px-4 block w-full focus:outline-2 focus:outline-blue-700"
-              type="email"
-              required
-            />
-          </div>
-          <div className="mt-4 flex flex-col justify-between">
-            <div className="flex justify-between">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="password"
-              >
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          )}
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <input
-              id="password"
-              className="text-gray-700 border border-gray-300 rounded py-2 px-4 block w-full focus:outline-2 focus:outline-blue-700"
-              type="password"
-            />
-            <a
-              href="#"
-              className="text-xs text-gray-500 hover:text-gray-900 text-end w-full mt-2"
-            >
-              Forget Password?
-            </a>
           </div>
-          <div className="mt-8">
+
+          <div>
             <button
-              className="bg-[#0d7cf2] text-white font-bold py-2 px-4 w-full rounded hover:bg-blue-600"
-              onClick={loginUser}
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Login
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </div>
 
-
-          <div className="mt-4 flex items-center w-full text-center">
-            <a
-              href="#"
-              className="text-xs text-gray-500 capitalize text-center w-full"
-            >
-              Don&apos;t have any account yet?
-              <span className="text-blue-700" onClick={handleClick}>
-                {" "}
-                Sign Up
-              </span>
-            </a>
+          <div className="text-sm text-center">
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+              Don't have an account? Sign up
+            </Link>
           </div>
-          {/* <div style={alertBarStyle}>
-              <SimpleAlert
-                severity={alertData.severity}
-                message={alertData.message}
-              />
-            </div> */}
-        </div>
+        </form>
       </div>
     </div>
-    </div >
   );
 };
 
-export default LoginWithGoogleButton;
+export default Login;
