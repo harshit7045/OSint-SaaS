@@ -8,36 +8,49 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-       useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
   const checkAuthStatus = () => {
-    const token = localStorage.getItem("token");
-    const storedUserData = localStorage.getItem("userData");
+    try {
+      const token = localStorage.getItem("token");
+      const storedUserData = localStorage.getItem("userData");
 
-    if (token) {
-      setIsLoggedIn(true);
-      if (storedUserData) {
-        setUserData(JSON.parse(storedUserData));
+      if (token) {
+        setIsLoggedIn(true);
+        setUserData(storedUserData ? JSON.parse(storedUserData) : null);
+      } else {
+        setIsLoggedIn(false);
+        setUserData(null);
       }
-    } else {
-      setIsLoggedIn(false);
-      setUserData(null);
+    } catch (error) {
+      console.error("Error checking authentication status:", error);
     }
   };
 
+  useEffect(() => {
+    checkAuthStatus();
+
+    const authChangeHandler = () => {
+      checkAuthStatus();
+    };
+
+    window.addEventListener("authChanged", authChangeHandler);
+
+    return () => {
+      window.removeEventListener("authChanged", authChangeHandler);
+    };
+  }, []);
+
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userData");
-    localStorage.removeItem("userId");
+    localStorage.clear();
     setIsLoggedIn(false);
     setUserData(null);
     navigate("/login");
+
+    // Notify header to recheck auth
+    window.dispatchEvent(new Event("authChanged"));
   };
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsMobileMenuOpen((prev) => !prev);
   };
 
   return (
@@ -45,7 +58,7 @@ const Header = () => {
       <nav className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold text-blue-600 flex items-center">
-            <img src="/logo.png" alt="TuteDude" className="h-8 w-auto mr-2" />
+            <img src="https://storage.googleapis.com/test694/Images/logo-hm.webp" alt="TuteDude" className="h-8 w-auto mr-2" loading="lazy" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -55,15 +68,13 @@ const Header = () => {
             </Link>
             {isLoggedIn ? (
               <>
-                <Link to="/my-videos" className="text-gray-700 hover:text-blue-600 transition duration-200">
-                  My Videos
+                <Link
+                  to="/profile"
+                  className="text-gray-700 hover:text-blue-600 transition duration-200"
+                >
+                  Course Work
                 </Link>
-                <div className="relative group">
-                  <Link to="/profile" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition duration-200">
-                    <FaUser className="text-lg" />
-                    <span>{userData?.username || 'Course Page'}</span>
-                  </Link>
-                </div>
+                
                 <button
                   onClick={handleLogout}
                   className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
@@ -81,10 +92,10 @@ const Header = () => {
                   Login
                 </Link>
                 <Link
-                  to={isLoggedIn ? "/profile" : "/register"} // Redirect to profile if logged in
+                  to="/register"
                   className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-200"
                 >
-                  {isLoggedIn ? "Go to Profile" : "Sign Up"}
+                  Sign Up
                 </Link>
               </>
             )}
@@ -94,7 +105,7 @@ const Header = () => {
           <button
             onClick={toggleMobileMenu}
             className="md:hidden text-gray-700 hover:text-blue-600 transition duration-200"
-            aria-label="Toggle menu"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           >
             {isMobileMenuOpen ? <FaTimes className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
           </button>
@@ -113,20 +124,13 @@ const Header = () => {
             {isLoggedIn ? (
               <>
                 <Link
-                  to="/my-videos"
+                  to="/profile"
                   className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-4 py-2 rounded transition duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  My Videos
+                  Course Work
                 </Link>
-                <Link
-                  to="/profile"
-                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-4 py-2 rounded transition duration-200"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <FaUser />
-                  <span>{userData?.username || 'Profile'}</span>
-                </Link>
+               
                 <button
                   onClick={() => {
                     handleLogout();
@@ -148,11 +152,11 @@ const Header = () => {
                   Login
                 </Link>
                 <Link
-                  to={isLoggedIn ? "/profile" : "/register"} // Redirect to profile if logged in
+                  to="/register"
                   className="block bg-blue-600 text-white text-center px-4 py-2 rounded-full hover:bg-blue-700 transition duration-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {isLoggedIn ? "Go to Profile" : "Sign Up"}
+                  Sign Up
                 </Link>
               </>
             )}

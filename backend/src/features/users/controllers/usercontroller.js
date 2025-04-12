@@ -52,6 +52,132 @@ const userController = {
       res.status(500).json({ error: error.message });
     }
   },
+  updateUserViewvideo: async (req, res) => {
+    // This function is deprecated, use updateUserViewVideo instead
+    return res.status(400).json({ 
+      success: false, 
+      error: "This endpoint is deprecated. Please use updateUserViewVideo instead." 
+    });
+  },
+  getlastWatchedTime: async (req, res) => {
+    const { videoId } = req.body;
+    const userIdOrEmail = req.user.user;
+    try{
+      console.log("aaaa"+ userIdOrEmail);
+      const user = await userModel.findOne({_id:userIdOrEmail});
+      if(!user){
+        return res.status(404).json({error:"User not found"});
+      }
+      const videoEntry = user.videos.find(v => v.videoId.toString() === videoId);
+      if(!videoEntry){
+        return res.status(404).json({error:"Video not found in user's list"});
+      }
+      return res.status(200).json({
+        success:true,
+        lastWatchTime:videoEntry.lastWatchTime
+      });   
+    }catch(error){
+      console.error('Error getting last watched time:', error);
+      return res.status(500).json({
+        success:false,
+        error:"Failed to get last watched time"
+      });
+    }   
+  },
+  updateUserViewVideo: async (req, res) => {
+    const { videoId, viewedSegments } = req.body;
+    
+    // Get user ID from the authenticated user
+    const userIdOrEmail = req.user.user;
+    
+    try {
+      // Find user by ID or email
+      let user;
+      if (userIdOrEmail.includes('@')) {
+        // If it's an email, find by email
+        user = await userModel.findOne({ email: userIdOrEmail });
+      } else {
+        // Otherwise, try to find by ID
+        user = await userModel.findById(userIdOrEmail);
+      }
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Find the video entry in user's videos array
+      const videoEntry = user.videos.find(v => v.videoId.toString() === videoId);
+      if (!videoEntry) {
+        return res.status(404).json({ error: "Video not found in user's list" });
+      }
+      
+      // Update the segments watched array - mark watched segments as 1
+      viewedSegments.forEach(segmentIndex => {
+        if (segmentIndex >= 0 && segmentIndex < videoEntry.segmentsWatchedArrayHash.length) {
+          videoEntry.segmentsWatchedArrayHash[segmentIndex] = 1;
+          // Update the last watched time based on the segment index
+          videoEntry.lastWatchTime = segmentIndex * 5;
+        }
+      });
+
+      // Save the updated user
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Video segments updated successfully",
+        updatedSegments: videoEntry.segmentsWatchedArrayHash,
+        lastWatchTime: videoEntry.lastWatchTime
+      });
+
+    } catch (error) {
+      console.error('Error updating video segments:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: "Failed to update video segments" 
+      });
+    }
+  },
+  getUserViewedSegments: async (req, res) => {
+    const { videoId } = req.body;
+    const userIdOrEmail = req.user.user;
+    
+    try {
+      // Find user by ID or email
+      let user;
+      if (userIdOrEmail.includes('@')) {
+        // If it's an email, find by email
+        user = await userModel.findOne({ email: userIdOrEmail });
+      } else {
+        // Otherwise, try to find by ID
+        user = await userModel.findById(userIdOrEmail);
+      }
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Find the video entry in user's videos array
+      const videoEntry = user.videos.find(v => v.videoId.toString() === videoId);
+      if (!videoEntry) {
+        return res.status(404).json({ error: "Video not found in user's list" });
+      }
+
+      // Return the segments watched array
+      return res.status(200).json({
+        success: true,
+        viewedSegments: videoEntry.segmentsWatchedArrayHash
+      });
+
+    } catch (error) {
+      console.error('Error getting viewed segments:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: "Failed to get viewed segments" 
+      });
+    }
+  },
+  
 
   signinUser: async (req, res) => {
     const { email, password } = req.body;
@@ -68,8 +194,8 @@ const userController = {
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
-      // Generate JWT token
-      const token = sign({ user: user.email }, process.env.SECRET_KEY, { expiresIn: "7d" });
+      // Generate JWT token with user ID instead of email
+      const token = sign({ user: user._id }, process.env.SECRET_KEY, { expiresIn: "7d" });
 
       // Return token in a cookie
       return res.cookie('tokenjwt', token, { httpOnly: false, secure: false, sameSite: 'none' })
@@ -83,16 +209,22 @@ const userController = {
 
   getUser: async (req, res) => {
     console.log(req.user);
-    const email = req.user.user;
+    const userId = req.user.user;
     try {
-      const user = await userModel.findOne({ email: email }).populate('courses videos.videoId');
+      // Find user by ID
+      const user = await userModel.findById(userId).populate('courses videos.videoId');
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      res.status(200).json(user);
+      
+      // Return user data
+      return res.status(200).json({ 
+        success: true, 
+        user: user 
+      });
     } catch (error) {
-      console.error('Error fetching user:', error);
-      res.status(500).json({ error: error.message });
+      console.error('Error getting user:', error);
+      return res.status(500).json({ error: error.message });
     }
   },
 };

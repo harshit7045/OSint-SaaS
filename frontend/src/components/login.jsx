@@ -24,9 +24,9 @@ const Login = () => {
 
       console.log("API Response:", response.data); // Debugging log
 
-      if (response.data.success && response.data.token && response.data.userId) {
+      if (response.data.token) {
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userId", response.data.userId);
+        localStorage.setItem("userId", response.data.user._id);
 
         // Delay navigation to ensure localStorage updates first
         setTimeout(() => {
